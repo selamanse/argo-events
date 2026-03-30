@@ -149,7 +149,7 @@ func (w *When) WaitForEventBusReady() *When {
 	if err := testutil.WaitForEventBusReady(ctx, w.eventBusClient, w.eventBus.Name, defaultTimeout); err != nil {
 		w.t.Fatal(err)
 	}
-	if w.eventBus.Spec.Kafka == nil { // not needed for kafka (exotic only)
+	if w.eventBus.Spec.Kafka == nil && w.eventBus.Spec.Solace == nil { // not needed for exotic event buses
 		if err := testutil.WaitForEventBusStatefulSetReady(ctx, w.kubeClient, Namespace, w.eventBus.Name, 2*time.Minute); err != nil {
 			w.t.Fatal(err)
 		}

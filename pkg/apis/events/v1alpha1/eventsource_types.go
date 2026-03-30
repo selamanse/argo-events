@@ -108,6 +108,8 @@ type EventSourceSpec struct {
 	Gerrit map[string]GerritEventSource `json:"gerrit,omitempty" protobuf:"bytes,35,rep,name=gerrit"`
 	// MNS event sources
 	MNS map[string]MNSEventSource `json:"mns,omitempty" protobuf:"bytes,36,rep,name=mns"`
+	// Solace event source
+	Solace map[string]SolaceEventSource `json:"solace,omitempty" protobuf:"bytes,37,rep,name=solace"`
 }
 
 func (e EventSourceSpec) GetReplicas() int32 {

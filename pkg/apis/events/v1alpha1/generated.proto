@@ -634,6 +634,9 @@ message BusConfig {
 
   // +optional
   optional KafkaBus kafka = 3;
+
+  // +optional
+  optional SolaceBus solace = 4;
 }
 
 // CalendarEventSource describes a time based dependency. One of the fields (schedule, interval, or recurrence) must be passed.
@@ -936,6 +939,10 @@ message EventBusSpec {
   // Exotic JetStream
   // +optional
   optional JetStreamConfig jetstreamExotic = 4;
+
+  // Solace eventbus
+  // +optional
+  optional SolaceBus solace = 5;
 }
 
 // EventBusStatus holds the status of the eventbus resource
@@ -1179,6 +1186,9 @@ message EventSourceSpec {
 
   // MNS event sources
   map<string, MNSEventSource> mns = 36;
+
+  // Solace event source
+  map<string, SolaceEventSource> solace = 37;
 }
 
 // EventSourceStatus holds the status of the event-source resource
@@ -2977,6 +2987,100 @@ message SlackTrigger {
   optional SlackSender sender = 8;
 }
 
+// SolaceAuth contains authentication configuration for Solace
+message SolaceAuth {
+  // Username secret for Solace authentication
+  // +optional
+  optional .k8s.io.api.core.v1.SecretKeySelector username = 1;
+
+  // Password secret for Solace authentication
+  // +optional
+  optional .k8s.io.api.core.v1.SecretKeySelector password = 2;
+}
+
+// SolaceBus holds the Solace EventBus information
+message SolaceBus {
+  // URL to Solace broker, e.g. tcp://localhost:55555
+  optional string url = 1;
+
+  // Topic prefix for publishing/subscribing, defaults to {namespace_name}-{eventbus_name}
+  // +optional
+  optional string topic = 2;
+
+  // VPN is the Solace message VPN name
+  // +optional
+  optional string vpn = 3;
+
+  // TLS configuration for the Solace client
+  // +optional
+  optional TLSConfig tls = 4;
+
+  // Auth contains the authentication configuration
+  // +optional
+  optional SolaceAuth auth = 5;
+}
+
+// SolaceEventSource refers to event-source for Solace related events
+message SolaceEventSource {
+  // URL to Solace broker, e.g. tcp://solace:55555
+  optional string url = 1;
+
+  // Topic to subscribe to
+  optional string topic = 2;
+
+  // VPN is the Solace message VPN name
+  // +optional
+  optional string vpn = 3;
+
+  // TLS configuration for the Solace client
+  // +optional
+  optional TLSConfig tls = 4;
+
+  // Auth contains the authentication configuration
+  // +optional
+  optional SolaceAuth auth = 5;
+
+  // JSONBody specifies that all event body payload coming from this
+  // source will be JSON
+  // +optional
+  optional bool jsonBody = 6;
+
+  // Metadata holds the user defined metadata which will passed along the event payload.
+  // +optional
+  map<string, string> metadata = 7;
+
+  // Filter
+  // +optional
+  optional EventSourceFilter filter = 8;
+}
+
+// SolaceTrigger refers to the specification of the Solace trigger.
+message SolaceTrigger {
+  // URL to Solace broker, e.g. tcp://localhost:55555.
+  optional string url = 1;
+
+  // Topic to publish the message to.
+  optional string topic = 2;
+
+  // Payload is the list of key-value extracted from an event payload to construct the request payload.
+  repeated TriggerParameter payload = 3;
+
+  // Parameters is the list of parameters that is applied to resolved Solace trigger object.
+  repeated TriggerParameter parameters = 4;
+
+  // VPN is the Solace message VPN name.
+  // +optional
+  optional string vpn = 5;
+
+  // TLS configuration for the Solace client.
+  // +optional
+  optional TLSConfig tls = 6;
+
+  // Auth contains the authentication configuration.
+  // +optional
+  optional SolaceAuth auth = 7;
+}
+
 // StandardK8STrigger is the standard Kubernetes resource trigger
 message StandardK8STrigger {
   // Source of the K8s resource file(s)
@@ -3377,6 +3481,10 @@ message TriggerTemplate {
   // Email refers to the trigger designed to send an email notification
   // +optional
   optional EmailTrigger email = 17;
+
+  // Solace refers to the trigger designed to publish messages to a Solace topic.
+  // +optional
+  optional SolaceTrigger solace = 18;
 }
 
 // URLArtifact contains information about an artifact at an HTTP endpoint.

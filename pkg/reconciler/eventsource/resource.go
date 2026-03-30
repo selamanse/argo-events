@@ -244,6 +244,12 @@ func buildDeployment(args *AdaptorArgs, eventBus *v1alpha1.EventBus) (*appv1.Dep
 		clientKeySecret = nil
 		accessSecret = nil
 		secretObjs = []interface{}{eventSourceCopy, eventBus} // kafka requires secrets for sasl and tls
+	case eventBus.Status.Config.Solace != nil:
+		caCertSecret = nil
+		clientCertSecret = nil
+		clientKeySecret = nil
+		accessSecret = nil
+		secretObjs = []interface{}{eventSourceCopy, eventBus} // solace secrets are mounted from the event bus config
 	default:
 		return nil, fmt.Errorf("unsupported event bus")
 	}

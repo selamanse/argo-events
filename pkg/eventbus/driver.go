@@ -13,6 +13,8 @@ import (
 	jetstreamsensor "github.com/argoproj/argo-events/pkg/eventbus/jetstream/sensor"
 	kafkasource "github.com/argoproj/argo-events/pkg/eventbus/kafka/eventsource"
 	kafkasensor "github.com/argoproj/argo-events/pkg/eventbus/kafka/sensor"
+	solacesource "github.com/argoproj/argo-events/pkg/eventbus/solace/eventsource"
+	solacesensor "github.com/argoproj/argo-events/pkg/eventbus/solace/sensor"
 	stansource "github.com/argoproj/argo-events/pkg/eventbus/stan/eventsource"
 	stansensor "github.com/argoproj/argo-events/pkg/eventbus/stan/sensor"
 	"github.com/argoproj/argo-events/pkg/shared/logging"
@@ -40,6 +42,8 @@ func GetEventSourceDriver(ctx context.Context, eventBusConfig v1alpha1.BusConfig
 		eventBusType = v1alpha1.EventBusJetStream
 	case eventBusConfig.Kafka != nil:
 		eventBusType = v1alpha1.EventBusKafka
+	case eventBusConfig.Solace != nil:
+		eventBusType = v1alpha1.EventBusSolace
 	default:
 		return nil, fmt.Errorf("invalid event bus")
 	}
@@ -58,6 +62,8 @@ func GetEventSourceDriver(ctx context.Context, eventBusConfig v1alpha1.BusConfig
 		}
 	case v1alpha1.EventBusKafka:
 		dvr = kafkasource.NewKafkaSource(eventBusConfig.Kafka, logger)
+	case v1alpha1.EventBusSolace:
+		dvr = solacesource.NewSolaceSource(eventBusConfig.Solace, logger)
 	default:
 		return nil, fmt.Errorf("invalid eventbus type")
 	}
@@ -86,6 +92,8 @@ func GetSensorDriver(ctx context.Context, eventBusConfig v1alpha1.BusConfig, sen
 		eventBusType = v1alpha1.EventBusJetStream
 	case eventBusConfig.Kafka != nil:
 		eventBusType = v1alpha1.EventBusKafka
+	case eventBusConfig.Solace != nil:
+		eventBusType = v1alpha1.EventBusSolace
 	default:
 		return nil, fmt.Errorf("invalid event bus")
 	}
@@ -100,6 +108,9 @@ func GetSensorDriver(ctx context.Context, eventBusConfig v1alpha1.BusConfig, sen
 		return dvr, err
 	case v1alpha1.EventBusKafka:
 		dvr = kafkasensor.NewKafkaSensor(eventBusConfig.Kafka, sensorSpec, hostname, logger)
+		return dvr, nil
+	case v1alpha1.EventBusSolace:
+		dvr = solacesensor.NewSolaceSensor(eventBusConfig.Solace, sensorSpec, hostname, logger)
 		return dvr, nil
 	default:
 		return nil, fmt.Errorf("invalid eventbus type")
@@ -120,6 +131,8 @@ func GetAuth(ctx context.Context, eventBusConfig v1alpha1.BusConfig) (*eventbusc
 			eventBusAuth = nil
 		}
 	case eventBusConfig.Kafka != nil:
+		eventBusAuth = nil
+	case eventBusConfig.Solace != nil:
 		eventBusAuth = nil
 	default:
 		return nil, fmt.Errorf("invalid event bus")

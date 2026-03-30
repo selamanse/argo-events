@@ -81,6 +81,10 @@ func (eb *eventbus) ValidateUpdate(ctx context.Context) *admissionv1.AdmissionRe
 		if eb.oldeb.Spec.JetStreamExotic == nil {
 			return DeniedResponse("Can not change event bus implementation")
 		}
+	case eb.neweb.Spec.Solace != nil:
+		if eb.oldeb.Spec.Solace == nil {
+			return DeniedResponse("Can not change event bus implementation")
+		}
 	}
 
 	return AllowedResponse()

@@ -62,6 +62,9 @@ ifndef DOCKER
 DOCKER:=$(shell command -v podman 2> /dev/null)
 endif
 
+HOST_OS:=$(shell uname -s)
+HOST_ARCH:=$(shell uname -m)
+
 # Check that the needed executables are available, else exit before the build
 K := $(foreach exec,$(EXECUTABLES), $(if $(shell which $(exec)),some string,$(error "No $(exec) in PATH")))
 
@@ -89,6 +92,7 @@ dist/$(BINARY_NAME)-%:
 
 .PHONY: image
 BUILD_DIST = dist/$(BINARY_NAME)-linux-amd64
+IMAGE_CGO_ENABLED ?= 1
 ifeq ($(shell uname -m),arm64)
 BUILD_DIST = dist/$(BINARY_NAME)-linux-arm64
 endif
@@ -97,6 +101,43 @@ image: clean $(BUILD_DIST)
 	@if [[ "$(DOCKER_PUSH)" = "true" ]]; then $(DOCKER) push $(IMAGE_NAMESPACE)/$(BINARY_NAME):$(VERSION); fi
 ifdef IMAGE_IMPORT_CMD
 	$(IMAGE_IMPORT_CMD) $(IMAGE_NAMESPACE)/$(BINARY_NAME):$(VERSION)
+endif
+
+ifeq ($(HOST_OS),Darwin)
+ifeq ($(HOST_ARCH),arm64)
+dist/$(BINARY_NAME)-linux-arm64:
+	@if [[ "$(IMAGE_CGO_ENABLED)" = "1" ]]; then \
+		$(DOCKER) run --rm --platform linux/arm64 --user "$$(id -u):$$(id -g)" \
+			-e CGO_ENABLED=1 -e GOOS=linux -e GOARCH=arm64 \
+			-e GOCACHE=/tmp/go-build -e GOPATH=/tmp/go \
+			-v "$(CURRENT_DIR)":/src -w /src golang:1.26-bookworm \
+			/bin/bash -lc "/usr/local/go/bin/go build -v -ldflags '${LDFLAGS}' -o /src/dist/$(BINARY_NAME)-linux-arm64 ./cmd"; \
+	else \
+		CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/$(BINARY_NAME)-linux-arm64 ./cmd; \
+	fi
+endif
+ifeq ($(HOST_ARCH),x86_64)
+dist/$(BINARY_NAME)-linux-amd64:
+	@if [[ "$(IMAGE_CGO_ENABLED)" = "1" ]]; then \
+		$(DOCKER) run --rm --platform linux/amd64 --user "$$(id -u):$$(id -g)" \
+			-e CGO_ENABLED=1 -e GOOS=linux -e GOARCH=amd64 \
+			-e GOCACHE=/tmp/go-build -e GOPATH=/tmp/go \
+			-v "$(CURRENT_DIR)":/src -w /src golang:1.26-bookworm \
+			/bin/bash -lc "/usr/local/go/bin/go build -v -ldflags '${LDFLAGS}' -o /src/dist/$(BINARY_NAME)-linux-amd64 ./cmd"; \
+	else \
+		CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/$(BINARY_NAME)-linux-amd64 ./cmd; \
+	fi
+endif
+else
+ifeq ($(HOST_ARCH),arm64)
+dist/$(BINARY_NAME)-linux-arm64:
+	CGO_ENABLED=$(IMAGE_CGO_ENABLED) GOOS=linux GOARCH=arm64 go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/$(BINARY_NAME)-linux-arm64 ./cmd
+endif
+
+ifeq ($(HOST_ARCH),x86_64)
+dist/$(BINARY_NAME)-linux-amd64:
+	CGO_ENABLED=$(IMAGE_CGO_ENABLED) GOOS=linux GOARCH=amd64 go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/$(BINARY_NAME)-linux-amd64 ./cmd
+endif
 endif
 
 image-linux-%: dist/$(BINARY_NAME)-linux-%
@@ -122,6 +163,17 @@ endif
 ifeq ($(EventBusDriver),kafka)
 	kubectl -n argo-events delete -k test/manifests/kafka
 endif
+
+.PHONY: solace-setup
+solace-setup:
+	bash ./test/e2e/solace-smoke.sh --setup-only
+
+.PHONY: solace-smoke
+solace-smoke:
+	bash ./test/e2e/solace-smoke.sh
+
+.PHONY: solace-e2e
+solace-e2e: start solace-smoke
 
 # to run just one of the functional e2e tests by name (i.e. 'make TestMetricsWithWebhook'):
 Test%:

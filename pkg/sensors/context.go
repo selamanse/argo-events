@@ -70,7 +70,9 @@ type SensorContext struct {
 	azureEventHubsClients sharedutil.StringKeyedMap[*eventhubs.Hub]
 	// azureServiceBusClients holds the references to active Azure Service Bus clients.
 	azureServiceBusClients sharedutil.StringKeyedMap[*servicebus.Sender]
-	metrics                *sensormetrics.Metrics
+	// solacePublishers holds the references to active Solace publishers when built with CGO.
+	solacePublishers sharedutil.StringKeyedMap[any]
+	metrics          *sensormetrics.Metrics
 }
 
 // NewSensorContext returns a new sensor execution context.
@@ -94,6 +96,7 @@ func NewSensorContext(kubeClient kubernetes.Interface, dynamicClient dynamic.Int
 		openwhiskClients:       sharedutil.NewStringKeyedMap[*whisk.Client](),
 		azureEventHubsClients:  sharedutil.NewStringKeyedMap[*eventhubs.Hub](),
 		azureServiceBusClients: sharedutil.NewStringKeyedMap[*servicebus.Sender](),
+		solacePublishers:       sharedutil.NewStringKeyedMap[any](),
 		metrics:                metrics,
 	}
 }

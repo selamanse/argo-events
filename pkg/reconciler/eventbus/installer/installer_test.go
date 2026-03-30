@@ -76,6 +76,14 @@ func TestGetInstaller(t *testing.T) {
 		_, ok = installer.(*exoticJetStreamInstaller)
 		assert.True(t, ok)
 	})
+
+	t.Run("get solace installer", func(t *testing.T) {
+		installer, err := getInstaller(testSolaceExoticBus, nil, nil, fakeConfig, zaptest.NewLogger(t).Sugar())
+		assert.NoError(t, err)
+		assert.NotNil(t, installer)
+		_, ok := installer.(*exoticSolaceInstaller)
+		assert.True(t, ok)
+	})
 }
 
 func init() {
@@ -194,5 +202,14 @@ func TestInstall(t *testing.T) {
 		assert.NotNil(t, testObj.Status.Config.JetStream)
 		assert.NotEmpty(t, testObj.Status.Config.JetStream.URL)
 		assert.NotNil(t, testObj.Status.Config.JetStream.AccessSecret)
+	})
+
+	t.Run("test solace install ok", func(t *testing.T) {
+		testObj := testSolaceExoticBus.DeepCopy()
+		err := Install(ctx, testObj, cl, kubeClient, fakeConfig, zaptest.NewLogger(t).Sugar())
+		assert.NoError(t, err)
+		assert.True(t, testObj.Status.IsReady())
+		assert.NotNil(t, testObj.Status.Config.Solace)
+		assert.Equal(t, testSolaceURL, testObj.Status.Config.Solace.URL)
 	})
 }

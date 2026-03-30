@@ -2,6 +2,50 @@
 
 The examples demonstrate how Argo Events works.
 
+Some EventSources use Kubernetes lease-based leader election. For those
+examples, create a Service Account with RBAC on `leases` in the target
+namespace, for example:
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: argo-events
+  name: operate-eventsource-sa
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: argo-events
+  name: operate-eventsource-leases-role
+rules:
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  namespace: argo-events
+  name: operate-eventsource-leases-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: operate-eventsource-leases-role
+subjects:
+  - kind: ServiceAccount
+    name: operate-eventsource-sa
+```
+
 To make the Sensors be able to trigger Workflows, a Service Account with RBAC
 settings as follows is required (assume you run the examples in the namespace
 `argo-events`).

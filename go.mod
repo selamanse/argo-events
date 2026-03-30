@@ -103,6 +103,7 @@ require (
 	sigs.k8s.io/controller-runtime v0.19.0
 	sigs.k8s.io/controller-tools v0.17.3
 	sigs.k8s.io/yaml v1.6.0
+	solace.dev/go/messaging v1.10.0
 )
 
 require (

@@ -34,6 +34,7 @@ import (
 	"github.com/argoproj/argo-events/pkg/sensors/triggers/nats"
 	"github.com/argoproj/argo-events/pkg/sensors/triggers/pulsar"
 	"github.com/argoproj/argo-events/pkg/sensors/triggers/slack"
+	solacetrigger "github.com/argoproj/argo-events/pkg/sensors/triggers/solace"
 	standardk8s "github.com/argoproj/argo-events/pkg/sensors/triggers/standard-k8s"
 	"github.com/argoproj/argo-events/pkg/shared/logging"
 )
@@ -165,6 +166,14 @@ func (sensorCtx *SensorContext) GetTrigger(ctx context.Context, trigger *v1alpha
 		result, err := email.NewEmailTrigger(sensorCtx.sensor, trigger, log)
 		if err != nil {
 			log.Errorw("failed to new a Email trigger", zap.Error(err))
+			return nil
+		}
+		return result
+	}
+	if trigger.Template.Solace != nil {
+		result, err := solacetrigger.NewSolaceTrigger(sensorCtx.sensor, trigger, sensorCtx.solacePublishers, log)
+		if err != nil {
+			log.Errorw("failed to new a Solace trigger", zap.Error(err))
 			return nil
 		}
 		return result

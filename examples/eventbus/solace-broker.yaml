@@ -1,0 +1,130 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: solace-broker-auth
+type: Opaque
+stringData:
+  username: admin
+  password: admin
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: solace-headless
+spec:
+  clusterIP: None
+  selector:
+    app: solace
+  ports:
+    - name: smf
+      port: 55555
+      targetPort: 55555
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: solace
+spec:
+  selector:
+    app: solace
+  ports:
+    - name: broker-manager
+      port: 8080
+      targetPort: 8080
+    - name: smf
+      port: 55555
+      targetPort: 55555
+    - name: semp
+      port: 9000
+      targetPort: 9000
+    - name: mqtt
+      port: 1883
+      targetPort: 1883
+    - name: amqp
+      port: 5672
+      targetPort: 5672
+    - name: web-transport
+      port: 8008
+      targetPort: 8008
+    - name: websmf
+      port: 8000
+      targetPort: 8000
+    - name: ssh
+      port: 2222
+      targetPort: 2222
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: solace
+spec:
+  serviceName: solace-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: solace
+  template:
+    metadata:
+      labels:
+        app: solace
+    spec:
+      containers:
+        - name: broker
+          image: solace/solace-pubsub-standard:edge
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: broker-manager
+            - containerPort: 55555
+              name: smf
+            - containerPort: 9000
+              name: semp
+            - containerPort: 1883
+              name: mqtt
+            - containerPort: 5672
+              name: amqp
+            - containerPort: 8008
+              name: web-transport
+            - containerPort: 8000
+              name: websmf
+            - containerPort: 2222
+              name: ssh
+          env:
+            - name: username_admin_globalaccesslevel
+              value: admin
+            - name: username_admin_password
+              valueFrom:
+                secretKeyRef:
+                  name: solace-broker-auth
+                  key: password
+            - name: system_scaling_maxconnectioncount
+              value: "100"
+          volumeMounts:
+            - name: storage
+              mountPath: /var/lib/solace
+            - name: dshm
+              mountPath: /dev/shm
+          readinessProbe:
+            tcpSocket:
+              port: 55555
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 55555
+            initialDelaySeconds: 60
+            periodSeconds: 20
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 2Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi

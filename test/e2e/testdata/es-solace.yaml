@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: e2e-solace
+spec:
+  template:
+    serviceAccountName: operate-eventsource-sa
+  solace:
+    example:
+      url: tcp://solace.argo-events:55555
+      topic: events/argo/test-functional
+      jsonBody: true
+      auth:
+        username:
+          name: solace-broker-auth
+          key: username
+        password:
+          name: solace-broker-auth
+          key: password

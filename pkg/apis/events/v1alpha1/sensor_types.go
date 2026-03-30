@@ -339,6 +339,9 @@ type TriggerTemplate struct {
 	// Email refers to the trigger designed to send an email notification
 	// +optional
 	Email *EmailTrigger `json:"email,omitempty" protobuf:"bytes,17,opt,name=email"`
+	// Solace refers to the trigger designed to publish messages to a Solace topic.
+	// +optional
+	Solace *SolaceTrigger `json:"solace,omitempty" protobuf:"bytes,18,opt,name=solace"`
 }
 
 type ConditionsResetCriteria struct {
@@ -645,6 +648,27 @@ type NATSTrigger struct {
 	// AuthInformation
 	// +optional
 	Auth *NATSAuth `json:"auth,omitempty" protobuf:"bytes,6,opt,name=auth"`
+}
+
+// SolaceTrigger refers to the specification of the Solace trigger.
+type SolaceTrigger struct {
+	// URL to Solace broker, e.g. tcp://localhost:55555.
+	URL string `json:"url" protobuf:"bytes,1,opt,name=url"`
+	// Topic to publish the message to.
+	Topic string `json:"topic" protobuf:"bytes,2,opt,name=topic"`
+	// Payload is the list of key-value extracted from an event payload to construct the request payload.
+	Payload []TriggerParameter `json:"payload" protobuf:"bytes,3,rep,name=payload"`
+	// Parameters is the list of parameters that is applied to resolved Solace trigger object.
+	Parameters []TriggerParameter `json:"parameters,omitempty" protobuf:"bytes,4,rep,name=parameters"`
+	// VPN is the Solace message VPN name.
+	// +optional
+	VPN string `json:"vpn,omitempty" protobuf:"bytes,5,opt,name=vpn"`
+	// TLS configuration for the Solace client.
+	// +optional
+	TLS *TLSConfig `json:"tls,omitempty" protobuf:"bytes,6,opt,name=tls"`
+	// Auth contains the authentication configuration.
+	// +optional
+	Auth *SolaceAuth `json:"auth,omitempty" protobuf:"bytes,7,opt,name=auth"`
 }
 
 // CustomTrigger refers to the specification of the custom trigger.

@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: EventBus
+metadata:
+  name: default
+spec:
+  solace:
+    # Solace PubSub+ broker URL
+    url: tcp://solace.default:55555
+    # Message VPN name, defaults to "default"
+    vpn: default
+    # Topic prefix for events, defaults to {namespace}-{eventbus_name}
+    # topic: my-events
+    auth:
+      username:
+        name: solace-broker-auth
+        key: username
+      password:
+        name: solace-broker-auth
+        key: password
+#    tls:
+#      caCertSecret:
+#        name: solace-tls
+#        key: ca.crt
+#      clientCertSecret:
+#        name: solace-tls
+#        key: client.crt
+#      clientKeySecret:
+#        name: solace-tls
+#        key: client.key
+#      # Set to true to skip server certificate verification
+#      insecureSkipVerify: false

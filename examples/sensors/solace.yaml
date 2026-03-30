@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: solace
+spec:
+  template:
+    serviceAccountName: operate-eventsource-sa
+  # Use a Solace EventBus
+  eventBusName: default
+  dependencies:
+    - name: test-dep
+      eventSourceName: solace
+      eventName: example
+  triggers:
+    - template:
+        name: solace-log-trigger
+        log:
+          intervalSeconds: 5

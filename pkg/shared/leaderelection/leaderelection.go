@@ -39,7 +39,7 @@ type LeaderCallbacks struct {
 
 func NewElector(ctx context.Context, eventBusConfig aev1.BusConfig, clusterName string, clusterSize int, namespace string, leasename string, hostname string) (Elector, error) {
 	switch {
-	case eventBusConfig.Kafka != nil || strings.ToLower(os.Getenv(aev1.EnvVarLeaderElection)) == "k8s":
+	case eventBusConfig.Kafka != nil || eventBusConfig.Solace != nil || strings.ToLower(os.Getenv(aev1.EnvVarLeaderElection)) == "k8s":
 		return newKubernetesElector(namespace, leasename, hostname)
 	case eventBusConfig.NATS != nil:
 		return newEventBusElector(ctx, eventBusConfig.NATS.Auth, clusterName, clusterSize, eventBusConfig.NATS.URL, nil)

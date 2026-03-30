@@ -44,6 +44,7 @@ var (
 	GenericEvent         EventSourceType = "generic"
 	BitbucketServerEvent EventSourceType = "bitbucketserver"
 	BitbucketEvent       EventSourceType = "bitbucket"
+	SolaceEvent          EventSourceType = "solace"
 )
 
 var (
@@ -69,6 +70,7 @@ var (
 		FileEvent,
 		SFTPEvent,
 		GenericEvent,
+		SolaceEvent,
 	}
 )
 
@@ -91,6 +93,7 @@ var (
 	TriggerTypeAzureEventHubs  TriggerType = "AzureEventHubs"
 	TriggerTypeAzureServiceBus TriggerType = "AzureServiceBus"
 	TriggerTypeEmail           TriggerType = "Email"
+	TriggerTypeSolace          TriggerType = "Solace"
 )
 
 // EventBusType is the type of event bus
@@ -101,6 +104,7 @@ var (
 	EventBusNATS      EventBusType = "nats"
 	EventBusJetStream EventBusType = "jetstream"
 	EventBusKafka     EventBusType = "kafka"
+	EventBusSolace    EventBusType = "solace"
 )
 
 // Environment variables

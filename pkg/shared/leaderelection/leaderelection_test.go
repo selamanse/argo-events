@@ -16,6 +16,10 @@ var (
 		{JetStream: &aev1.JetStreamConfig{}},
 		{JetStream: &aev1.JetStreamConfig{AccessSecret: &v1.SecretKeySelector{}}},
 	}
+	k8sConfigs = []aev1.BusConfig{
+		{Kafka: &aev1.KafkaBus{}},
+		{Solace: &aev1.SolaceBus{}},
+	}
 )
 
 func TestLeaderElectionWithInvalidEventBus(t *testing.T) {
@@ -41,8 +45,21 @@ func TestLeaderElectionWithKubernetesElector(t *testing.T) {
 	eventBusAuthFileMountPath = "test"
 
 	os.Setenv(aev1.EnvVarLeaderElection, "k8s")
+	defer os.Unsetenv(aev1.EnvVarLeaderElection)
 
 	for _, config := range configs {
+		elector, err := NewElector(context.TODO(), config, "", 0, "", "", "")
+		assert.Nil(t, err)
+
+		_, ok := elector.(*kubernetesElector)
+		assert.True(t, ok)
+	}
+}
+
+func TestLeaderElectionWithKubernetesElectorForNonNATSBuses(t *testing.T) {
+	eventBusAuthFileMountPath = "test"
+
+	for _, config := range k8sConfigs {
 		elector, err := NewElector(context.TODO(), config, "", 0, "", "", "")
 		assert.Nil(t, err)
 

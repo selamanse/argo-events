@@ -61,6 +61,18 @@ var (
 			},
 		},
 	}
+
+	testSolaceEventBus = &v1alpha1.EventBus{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "test-ns",
+			Name:      v1alpha1.DefaultEventBusName,
+		},
+		Spec: v1alpha1.EventBusSpec{
+			Solace: &v1alpha1.SolaceBus{
+				URL: "tcp://localhost:55555",
+			},
+		},
+	}
 )
 
 func TestValidate(t *testing.T) {
@@ -153,5 +165,18 @@ func TestValidate(t *testing.T) {
 		err := ValidateEventBus(eb)
 		assert.Error(t, err)
 		assert.True(t, strings.Contains(err.Error(), "\"spec.jetstreamExotic.url\" is missing"))
+	})
+
+	t.Run("test good solace eventbus", func(t *testing.T) {
+		err := ValidateEventBus(testSolaceEventBus)
+		assert.NoError(t, err)
+	})
+
+	t.Run("test solace eventbus no URL", func(t *testing.T) {
+		eb := testSolaceEventBus.DeepCopy()
+		eb.Spec.Solace.URL = ""
+		err := ValidateEventBus(eb)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "\"spec.solace.url\" is missing")
 	})
 }

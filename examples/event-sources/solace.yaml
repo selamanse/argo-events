@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: solace
+spec:
+  template:
+    serviceAccountName: operate-eventsource-sa
+  solace:
+    example:
+      # Solace PubSub+ broker URL
+      url: tcp://solace.default:55555
+      # Topic subscription, supports Solace wildcards (*/> for multi-level)
+      topic: events/argo/>
+      # jsonBody specifies that all event body payload coming from this
+      # source will be JSON
+      jsonBody: true
+      # Message VPN name, defaults to "default"
+      # vpn: default
+      auth:
+        username:
+          name: solace-broker-auth
+          key: username
+        password:
+          name: solace-broker-auth
+          key: password
+#      tls:
+#        caCertSecret:
+#          name: solace-tls
+#          key: ca.crt
+#        clientCertSecret:
+#          name: solace-tls
+#          key: client.crt
+#        clientKeySecret:
+#          name: solace-tls
+#          key: client.key
+#      metadata:
+#        env: production

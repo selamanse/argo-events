@@ -68,6 +68,55 @@ func (s *FunctionalSuite) TestCreateCalendarEventSource() {
 	defer t2.When().DeleteSensor()
 }
 
+func (s *FunctionalSuite) TestSolaceEventSource() {
+	if !fixtures.IsBusDriver("SOLACE") {
+		s.T().Skip("requires EventBusDriver=solace")
+	}
+
+	token := fmt.Sprintf("functional-solace-%d", time.Now().UnixNano())
+	publisherName := fmt.Sprintf("solace-publisher-%d", time.Now().UnixNano())
+	message := fmt.Sprintf(`{"hello":"world","test":"%s"}`, token)
+
+	t1 := s.Given().EventSource("@testdata/es-solace.yaml").
+		When().
+		CreateEventSource().
+		WaitForEventSourceReady().
+		Then().
+		ExpectEventSourcePodLogContains(LogEventSourceStarted)
+	defer t1.When().DeleteEventSource()
+
+	t2 := s.Given().Sensor("@testdata/sensor-solace.yaml").
+		When().
+		CreateSensor().
+		WaitForSensorReady().
+		Then().
+		ExpectSensorPodLogContains(LogSensorStarted)
+	defer t2.When().DeleteSensor()
+
+	t2.ExpectSensorPodLogContains(`"topic":"`+fixtures.EventBusName+`/>"`, util.PodLogCheckOptionWithTimeout(120*time.Second))
+
+	s.Given().
+		When().
+		Exec("kubectl", []string{
+			"-n", fixtures.Namespace,
+			"run", publisherName,
+			"--image=eclipse-mosquitto:2",
+			"--restart=Never",
+			"-l", fixtures.Label + "=" + fixtures.LabelValue,
+			"--command", "--",
+			"sh", "-lc",
+			fmt.Sprintf("mosquitto_pub -h solace.%s -p 1883 -u admin -P admin -t events/argo/test-functional -m '%s'", fixtures.Namespace, message),
+		}, fixtures.OutputRegexp(`pod/.* created`)).
+		Exec("kubectl", []string{
+			"-n", fixtures.Namespace,
+			"wait", "--for=jsonpath={.status.phase}=Succeeded", "pod/" + publisherName, "--timeout=60s",
+		}, fixtures.OutputRegexp(`condition met`))
+
+	t1.ExpectEventSourcePodLogContains(LogPublishEventSuccessful, util.PodLogCheckOptionWithTimeout(120*time.Second))
+	t2.ExpectSensorPodLogContains(token, util.PodLogCheckOptionWithTimeout(120*time.Second)).
+		ExpectSensorPodLogContains(LogTriggerActionSuccessful("log-trigger"), util.PodLogCheckOptionWithTimeout(120*time.Second))
+}
+
 func (s *FunctionalSuite) TestCreateCalendarEventSourceWithHA() {
 	for _, test := range []struct {
 		es, s string

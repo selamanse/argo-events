@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: solace-trigger
+spec:
+  template:
+    serviceAccountName: operate-eventsource-sa
+  eventBusName: default
+  dependencies:
+    - name: test-dep
+      # Pair this sensor with examples/event-sources/webhook.yaml and POST to
+      # the webhook EventSource. The sensor will forward the received payload
+      # to the Solace broker on a different topic.
+      eventSourceName: webhook
+      eventName: example
+  triggers:
+    - template:
+        name: publish-to-solace
+        solace:
+          url: tcp://solace.default:55555
+          # Publish to a topic outside events/argo/> so this example does not
+          # loop back into examples/event-sources/solace.yaml.
+          topic: events/solace/outbound
+          auth:
+            username:
+              name: solace-broker-auth
+              key: username
+            password:
+              name: solace-broker-auth
+              key: password
+          payload:
+            - src:
+                dependencyName: test-dep
+                dataKey: body
+              dest: body

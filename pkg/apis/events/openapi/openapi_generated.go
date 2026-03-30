@@ -143,6 +143,10 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SlackSender":                  schema_pkg_apis_events_v1alpha1_SlackSender(ref),
 		"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SlackThread":                  schema_pkg_apis_events_v1alpha1_SlackThread(ref),
 		"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SlackTrigger":                 schema_pkg_apis_events_v1alpha1_SlackTrigger(ref),
+		"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SolaceAuth":                   schema_pkg_apis_events_v1alpha1_SolaceAuth(ref),
+		"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SolaceBus":                    schema_pkg_apis_events_v1alpha1_SolaceBus(ref),
+		"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SolaceEventSource":            schema_pkg_apis_events_v1alpha1_SolaceEventSource(ref),
+		"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SolaceTrigger":                schema_pkg_apis_events_v1alpha1_SolaceTrigger(ref),
 		"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.StandardK8STrigger":           schema_pkg_apis_events_v1alpha1_StandardK8STrigger(ref),
 		"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.Status":                       schema_pkg_apis_events_v1alpha1_Status(ref),
 		"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.StatusPolicy":                 schema_pkg_apis_events_v1alpha1_StatusPolicy(ref),
@@ -1531,11 +1535,16 @@ func schema_pkg_apis_events_v1alpha1_BusConfig(ref common.ReferenceCallback) com
 							Ref: ref("github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.KafkaBus"),
 						},
 					},
+					"solace": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SolaceBus"),
+						},
+					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.JetStreamConfig", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.KafkaBus", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.NATSConfig"},
+			"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.JetStreamConfig", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.KafkaBus", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.NATSConfig", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SolaceBus"},
 	}
 }
 
@@ -2359,11 +2368,17 @@ func schema_pkg_apis_events_v1alpha1_EventBusSpec(ref common.ReferenceCallback) 
 							Ref:         ref("github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.JetStreamConfig"),
 						},
 					},
+					"solace": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Solace eventbus",
+							Ref:         ref("github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SolaceBus"),
+						},
+					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.JetStreamBus", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.JetStreamConfig", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.KafkaBus", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.NATSBus"},
+			"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.JetStreamBus", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.JetStreamConfig", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.KafkaBus", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.NATSBus", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SolaceBus"},
 	}
 }
 
@@ -3295,11 +3310,26 @@ func schema_pkg_apis_events_v1alpha1_EventSourceSpec(ref common.ReferenceCallbac
 							},
 						},
 					},
+					"solace": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Solace event source",
+							Type:        []string{"object"},
+							AdditionalProperties: &spec.SchemaOrBool{
+								Allows: true,
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref("github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SolaceEventSource"),
+									},
+								},
+							},
+						},
+					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.AMQPEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.AzureEventsHubEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.AzureQueueStorageEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.AzureServiceBusEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.BitbucketEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.BitbucketServerEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.CalendarEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.EmitterEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.FileEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.GenericEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.GerritEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.GithubEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.GitlabEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.HDFSEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.KafkaEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.MNSEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.MQTTEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.NATSEventsSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.NSQEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.PubSubEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.PulsarEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.RedisEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.RedisStreamEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.ResourceEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.S3Artifact", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SFTPEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SNSEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SQSEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.Service", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SlackEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.StorageGridEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.StripeEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.Template", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.WebhookEventSource"},
+			"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.AMQPEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.AzureEventsHubEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.AzureQueueStorageEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.AzureServiceBusEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.BitbucketEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.BitbucketServerEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.CalendarEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.EmitterEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.FileEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.GenericEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.GerritEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.GithubEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.GitlabEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.HDFSEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.KafkaEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.MNSEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.MQTTEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.NATSEventsSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.NSQEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.PubSubEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.PulsarEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.RedisEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.RedisStreamEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.ResourceEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.S3Artifact", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SFTPEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SNSEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SQSEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.Service", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SlackEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SolaceEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.StorageGridEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.StripeEventSource", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.Template", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.WebhookEventSource"},
 	}
 }
 
@@ -7729,6 +7759,240 @@ func schema_pkg_apis_events_v1alpha1_SlackTrigger(ref common.ReferenceCallback) 
 	}
 }
 
+func schema_pkg_apis_events_v1alpha1_SolaceAuth(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "SolaceAuth contains authentication configuration for Solace",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"username": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Username secret for Solace authentication",
+							Ref:         ref("k8s.io/api/core/v1.SecretKeySelector"),
+						},
+					},
+					"password": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Password secret for Solace authentication",
+							Ref:         ref("k8s.io/api/core/v1.SecretKeySelector"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.SecretKeySelector"},
+	}
+}
+
+func schema_pkg_apis_events_v1alpha1_SolaceBus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "SolaceBus holds the Solace EventBus information",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"url": {
+						SchemaProps: spec.SchemaProps{
+							Description: "URL to Solace broker, e.g. tcp://localhost:55555",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"topic": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Topic prefix for publishing/subscribing, defaults to {namespace_name}-{eventbus_name}",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"vpn": {
+						SchemaProps: spec.SchemaProps{
+							Description: "VPN is the Solace message VPN name",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"tls": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TLS configuration for the Solace client",
+							Ref:         ref("github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.TLSConfig"),
+						},
+					},
+					"auth": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Auth contains the authentication configuration",
+							Ref:         ref("github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SolaceAuth"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SolaceAuth", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.TLSConfig"},
+	}
+}
+
+func schema_pkg_apis_events_v1alpha1_SolaceEventSource(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "SolaceEventSource refers to event-source for Solace related events",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"url": {
+						SchemaProps: spec.SchemaProps{
+							Description: "URL to Solace broker, e.g. tcp://solace:55555",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"topic": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Topic to subscribe to",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"vpn": {
+						SchemaProps: spec.SchemaProps{
+							Description: "VPN is the Solace message VPN name",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"tls": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TLS configuration for the Solace client",
+							Ref:         ref("github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.TLSConfig"),
+						},
+					},
+					"auth": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Auth contains the authentication configuration",
+							Ref:         ref("github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SolaceAuth"),
+						},
+					},
+					"jsonBody": {
+						SchemaProps: spec.SchemaProps{
+							Description: "JSONBody specifies that all event body payload coming from this source will be JSON",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Metadata holds the user defined metadata which will passed along the event payload.",
+							Type:        []string{"object"},
+							AdditionalProperties: &spec.SchemaOrBool{
+								Allows: true,
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: "",
+										Type:    []string{"string"},
+										Format:  "",
+									},
+								},
+							},
+						},
+					},
+					"filter": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Filter",
+							Ref:         ref("github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.EventSourceFilter"),
+						},
+					},
+				},
+				Required: []string{"url", "topic"},
+			},
+		},
+		Dependencies: []string{
+			"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.EventSourceFilter", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SolaceAuth", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.TLSConfig"},
+	}
+}
+
+func schema_pkg_apis_events_v1alpha1_SolaceTrigger(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "SolaceTrigger refers to the specification of the Solace trigger.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"url": {
+						SchemaProps: spec.SchemaProps{
+							Description: "URL to Solace broker, e.g. tcp://localhost:55555.",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"topic": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Topic to publish the message to.",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"payload": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Payload is the list of key-value extracted from an event payload to construct the request payload.",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref("github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.TriggerParameter"),
+									},
+								},
+							},
+						},
+					},
+					"parameters": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Parameters is the list of parameters that is applied to resolved Solace trigger object.",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref("github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.TriggerParameter"),
+									},
+								},
+							},
+						},
+					},
+					"vpn": {
+						SchemaProps: spec.SchemaProps{
+							Description: "VPN is the Solace message VPN name.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"tls": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TLS configuration for the Solace client.",
+							Ref:         ref("github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.TLSConfig"),
+						},
+					},
+					"auth": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Auth contains the authentication configuration.",
+							Ref:         ref("github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SolaceAuth"),
+						},
+					},
+				},
+				Required: []string{"url", "topic", "payload"},
+			},
+		},
+		Dependencies: []string{
+			"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SolaceAuth", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.TLSConfig", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.TriggerParameter"},
+	}
+}
+
 func schema_pkg_apis_events_v1alpha1_StandardK8STrigger(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
@@ -8570,12 +8834,18 @@ func schema_pkg_apis_events_v1alpha1_TriggerTemplate(ref common.ReferenceCallbac
 							Ref:         ref("github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.EmailTrigger"),
 						},
 					},
+					"solace": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Solace refers to the trigger designed to publish messages to a Solace topic.",
+							Ref:         ref("github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SolaceTrigger"),
+						},
+					},
 				},
 				Required: []string{"name"},
 			},
 		},
 		Dependencies: []string{
-			"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.AWSLambdaTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.ArgoWorkflowTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.AzureEventHubsTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.AzureServiceBusTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.ConditionsResetCriteria", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.CustomTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.EmailTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.HTTPTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.KafkaTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.LogTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.NATSTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.OpenWhiskTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.PulsarTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SlackTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.StandardK8STrigger"},
+			"github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.AWSLambdaTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.ArgoWorkflowTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.AzureEventHubsTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.AzureServiceBusTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.ConditionsResetCriteria", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.CustomTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.EmailTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.HTTPTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.KafkaTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.LogTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.NATSTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.OpenWhiskTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.PulsarTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SlackTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.SolaceTrigger", "github.com/argoproj/argo-events/pkg/apis/events/v1alpha1.StandardK8STrigger"},
 	}
 }
 

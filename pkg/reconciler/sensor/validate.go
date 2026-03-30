@@ -180,6 +180,11 @@ func validateTriggerTemplate(template *v1alpha1.TriggerTemplate) error {
 			return fmt.Errorf("template %s is invalid, %w", template.Name, err)
 		}
 	}
+	if template.Solace != nil {
+		if err := validateSolaceTrigger(template.Solace); err != nil {
+			return fmt.Errorf("template %s is invalid, %w", template.Name, err)
+		}
+	}
 	return nil
 }
 
@@ -413,6 +418,32 @@ func validateEmailTrigger(trigger *v1alpha1.EmailTrigger) error {
 			if err := validateTriggerParameter(&parameter); err != nil {
 				return fmt.Errorf("resource parameter index: %d. err: %w", i, err)
 			}
+		}
+	}
+	return nil
+}
+
+// validateSolaceTrigger validates the Solace trigger.
+func validateSolaceTrigger(trigger *v1alpha1.SolaceTrigger) error {
+	if trigger == nil {
+		return fmt.Errorf("solace trigger can't be nil")
+	}
+	if trigger.URL == "" {
+		return fmt.Errorf("url is not specified")
+	}
+	if trigger.Topic == "" {
+		return fmt.Errorf("topic is not specified")
+	}
+	if trigger.Parameters != nil {
+		for i, parameter := range trigger.Parameters {
+			if err := validateTriggerParameter(&parameter); err != nil {
+				return fmt.Errorf("resource parameter index: %d. err: %w", i, err)
+			}
+		}
+	}
+	if trigger.TLS != nil {
+		if err := v1alpha1.ValidateTLSConfig(trigger.TLS); err != nil {
+			return err
 		}
 	}
 	return nil

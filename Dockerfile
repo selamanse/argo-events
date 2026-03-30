@@ -1,12 +1,14 @@
 ARG ARCH=$TARGETARCH
+ARG DEBIAN_VERSION=bookworm
+
 ####################################################################################################
 # base
 ####################################################################################################
-FROM alpine:3.16.2 as base
+FROM debian:${DEBIAN_VERSION}-slim as base
 ARG ARCH
-RUN apk update && apk upgrade && \
-    apk add ca-certificates && \
-    apk --no-cache add tzdata
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates libgcc-s1 libstdc++6 tzdata wget gzip && \
+    rm -rf /var/lib/apt/lists/*
 
 ENV ARGO_VERSION=v3.7.9
 
@@ -24,6 +26,8 @@ FROM scratch as argo-events
 ARG ARCH
 COPY --from=base /usr/share/zoneinfo /usr/share/zoneinfo
 COPY --from=base /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=base /lib /lib
+COPY --from=base /usr/lib /usr/lib
 COPY --from=base /usr/local/bin/argo /usr/local/bin/argo
 COPY --from=base /bin/argo-events /bin/argo-events
 ENTRYPOINT [ "/bin/argo-events" ]

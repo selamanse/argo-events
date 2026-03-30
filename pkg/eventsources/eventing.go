@@ -47,6 +47,7 @@ import (
 	"github.com/argoproj/argo-events/pkg/eventsources/sources/resource"
 	"github.com/argoproj/argo-events/pkg/eventsources/sources/sftp"
 	"github.com/argoproj/argo-events/pkg/eventsources/sources/slack"
+	solacesource "github.com/argoproj/argo-events/pkg/eventsources/sources/solace"
 	"github.com/argoproj/argo-events/pkg/eventsources/sources/storagegrid"
 	"github.com/argoproj/argo-events/pkg/eventsources/sources/stripe"
 	"github.com/argoproj/argo-events/pkg/eventsources/sources/webhook"
@@ -384,6 +385,16 @@ func GetEventingServers(eventSource *aev1.EventSource, metrics *eventsourcemetri
 			servers = append(servers, &alibabacloudmns.EventListener{EventSourceName: eventSource.Name, EventName: k, MNSEventSource: v, Metrics: metrics})
 		}
 		result[aev1.MNSEvent] = servers
+	}
+	if len(eventSource.Spec.Solace) != 0 {
+		servers := []EventingServer{}
+		for k, v := range eventSource.Spec.Solace {
+			if v.Filter != nil {
+				filters[k] = v.Filter
+			}
+			servers = append(servers, &solacesource.EventListener{EventSourceName: eventSource.Name, EventName: k, SolaceEventSource: v, Metrics: metrics})
+		}
+		result[aev1.SolaceEvent] = servers
 	}
 	return result, filters
 }

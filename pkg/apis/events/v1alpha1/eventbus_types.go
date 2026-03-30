@@ -41,6 +41,9 @@ type EventBusSpec struct {
 	// Exotic JetStream
 	// +optional
 	JetStreamExotic *JetStreamConfig `json:"jetstreamExotic,omitempty" protobuf:"bytes,4,opt,name=jetstreamExotic"`
+	// Solace eventbus
+	// +optional
+	Solace *SolaceBus `json:"solace,omitempty" protobuf:"bytes,5,opt,name=solace"`
 }
 
 // EventBusStatus holds the status of the eventbus resource
@@ -58,6 +61,8 @@ type BusConfig struct {
 	JetStream *JetStreamConfig `json:"jetstream,omitempty" protobuf:"bytes,2,opt,name=jetstream"`
 	// +optional
 	Kafka *KafkaBus `json:"kafka,omitempty" protobuf:"bytes,3,opt,name=kafka"`
+	// +optional
+	Solace *SolaceBus `json:"solace,omitempty" protobuf:"bytes,4,opt,name=solace"`
 }
 
 const (

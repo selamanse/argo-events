@@ -770,6 +770,9 @@
         },
         "nats": {
           "$ref": "#/definitions/io.argoproj.events.v1alpha1.NATSConfig"
+        },
+        "solace": {
+          "$ref": "#/definitions/io.argoproj.events.v1alpha1.SolaceBus"
         }
       }
     },
@@ -1212,6 +1215,10 @@
         "nats": {
           "description": "NATS eventbus",
           "$ref": "#/definitions/io.argoproj.events.v1alpha1.NATSBus"
+        },
+        "solace": {
+          "description": "Solace eventbus",
+          "$ref": "#/definitions/io.argoproj.events.v1alpha1.SolaceBus"
         }
       }
     },
@@ -1652,6 +1659,13 @@
           "type": "object",
           "additionalProperties": {
             "$ref": "#/definitions/io.argoproj.events.v1alpha1.SNSEventSource"
+          }
+        },
+        "solace": {
+          "description": "Solace event source",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/io.argoproj.events.v1alpha1.SolaceEventSource"
           }
         },
         "sqs": {
@@ -4118,6 +4132,136 @@
         }
       }
     },
+    "io.argoproj.events.v1alpha1.SolaceAuth": {
+      "description": "SolaceAuth contains authentication configuration for Solace",
+      "type": "object",
+      "properties": {
+        "password": {
+          "description": "Password secret for Solace authentication",
+          "$ref": "#/definitions/io.k8s.api.core.v1.SecretKeySelector"
+        },
+        "username": {
+          "description": "Username secret for Solace authentication",
+          "$ref": "#/definitions/io.k8s.api.core.v1.SecretKeySelector"
+        }
+      }
+    },
+    "io.argoproj.events.v1alpha1.SolaceBus": {
+      "description": "SolaceBus holds the Solace EventBus information",
+      "type": "object",
+      "properties": {
+        "auth": {
+          "description": "Auth contains the authentication configuration",
+          "$ref": "#/definitions/io.argoproj.events.v1alpha1.SolaceAuth"
+        },
+        "tls": {
+          "description": "TLS configuration for the Solace client",
+          "$ref": "#/definitions/io.argoproj.events.v1alpha1.TLSConfig"
+        },
+        "topic": {
+          "description": "Topic prefix for publishing/subscribing, defaults to {namespace_name}-{eventbus_name}",
+          "type": "string"
+        },
+        "url": {
+          "description": "URL to Solace broker, e.g. tcp://localhost:55555",
+          "type": "string"
+        },
+        "vpn": {
+          "description": "VPN is the Solace message VPN name",
+          "type": "string"
+        }
+      }
+    },
+    "io.argoproj.events.v1alpha1.SolaceEventSource": {
+      "description": "SolaceEventSource refers to event-source for Solace related events",
+      "type": "object",
+      "required": [
+        "url",
+        "topic"
+      ],
+      "properties": {
+        "auth": {
+          "description": "Auth contains the authentication configuration",
+          "$ref": "#/definitions/io.argoproj.events.v1alpha1.SolaceAuth"
+        },
+        "filter": {
+          "description": "Filter",
+          "$ref": "#/definitions/io.argoproj.events.v1alpha1.EventSourceFilter"
+        },
+        "jsonBody": {
+          "description": "JSONBody specifies that all event body payload coming from this source will be JSON",
+          "type": "boolean"
+        },
+        "metadata": {
+          "description": "Metadata holds the user defined metadata which will passed along the event payload.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "tls": {
+          "description": "TLS configuration for the Solace client",
+          "$ref": "#/definitions/io.argoproj.events.v1alpha1.TLSConfig"
+        },
+        "topic": {
+          "description": "Topic to subscribe to",
+          "type": "string"
+        },
+        "url": {
+          "description": "URL to Solace broker, e.g. tcp://solace:55555",
+          "type": "string"
+        },
+        "vpn": {
+          "description": "VPN is the Solace message VPN name",
+          "type": "string"
+        }
+      }
+    },
+    "io.argoproj.events.v1alpha1.SolaceTrigger": {
+      "description": "SolaceTrigger refers to the specification of the Solace trigger.",
+      "type": "object",
+      "required": [
+        "url",
+        "topic",
+        "payload"
+      ],
+      "properties": {
+        "auth": {
+          "description": "Auth contains the authentication configuration.",
+          "$ref": "#/definitions/io.argoproj.events.v1alpha1.SolaceAuth"
+        },
+        "parameters": {
+          "description": "Parameters is the list of parameters that is applied to resolved Solace trigger object.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/io.argoproj.events.v1alpha1.TriggerParameter"
+          }
+        },
+        "payload": {
+          "description": "Payload is the list of key-value extracted from an event payload to construct the request payload.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/io.argoproj.events.v1alpha1.TriggerParameter"
+          }
+        },
+        "tls": {
+          "description": "TLS configuration for the Solace client.",
+          "$ref": "#/definitions/io.argoproj.events.v1alpha1.TLSConfig"
+        },
+        "topic": {
+          "description": "Topic to publish the message to.",
+          "type": "string"
+        },
+        "url": {
+          "description": "URL to Solace broker, e.g. tcp://localhost:55555.",
+          "type": "string"
+        },
+        "vpn": {
+          "description": "VPN is the Solace message VPN name.",
+          "type": "string"
+        }
+      }
+    },
     "io.argoproj.events.v1alpha1.StandardK8STrigger": {
       "description": "StandardK8STrigger is the standard Kubernetes resource trigger",
       "type": "object",
@@ -4584,6 +4728,10 @@
         "slack": {
           "description": "Slack refers to the trigger designed to send slack notification message.",
           "$ref": "#/definitions/io.argoproj.events.v1alpha1.SlackTrigger"
+        },
+        "solace": {
+          "description": "Solace refers to the trigger designed to publish messages to a Solace topic.",
+          "$ref": "#/definitions/io.argoproj.events.v1alpha1.SolaceTrigger"
         }
       }
     },

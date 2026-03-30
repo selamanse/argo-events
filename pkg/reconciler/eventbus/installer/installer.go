@@ -48,6 +48,8 @@ func getInstaller(eventBus *aev1.EventBus, client client.Client, kubeClient kube
 		return NewJetStreamInstaller(client, eventBus, config, getLabels(eventBus), kubeClient, logger), nil
 	} else if kafka := eventBus.Spec.Kafka; kafka != nil {
 		return NewExoticKafkaInstaller(eventBus, logger), nil
+	} else if solace := eventBus.Spec.Solace; solace != nil {
+		return NewExoticSolaceInstaller(eventBus, logger), nil
 	} else if js := eventBus.Spec.JetStreamExotic; js != nil {
 		return NewExoticJetStreamInstaller(eventBus, logger), nil
 	}

@@ -54,6 +54,22 @@ metadata:
 spec:
   kafka:
     url: kafka-broker:9092`
+
+	E2EEventBusSolace = `apiVersion: argoproj.io/v1alpha1
+kind: EventBus
+metadata:
+  name: default
+spec:
+  solace:
+    url: tcp://solace.` + Namespace + `:55555
+    topic: ` + EventBusName + `
+    auth:
+      username:
+        name: solace-broker-auth
+        key: username
+      password:
+        name: solace-broker-auth
+        key: password`
 )
 
 type E2ESuite struct {
@@ -92,6 +108,15 @@ func (s *E2ESuite) SetupSuite() {
 	}
 	s.deleteResources(resources)
 
+	if IsBusDriver("SOLACE") {
+		_, err = Exec("kubectl", "-n", Namespace, "apply", "-f", "../../examples/rbac/eventsource-lease-rbac.yaml")
+		s.CheckError(err)
+		_, err = Exec("kubectl", "-n", Namespace, "apply", "-f", "../../examples/eventbus/solace-broker.yaml")
+		s.CheckError(err)
+		_, err = Exec("kubectl", "-n", Namespace, "rollout", "status", "statefulset/solace", "--timeout=300s")
+		s.CheckError(err)
+	}
+
 	s.Given().EventBus(GetBusDriverSpec()).
 		When().
 		CreateEventBus().
@@ -110,6 +135,13 @@ func (s *E2ESuite) TearDownSuite() {
 		Then().
 		ExpectEventBusDeleted()
 	s.T().Log("EventBus is deleted")
+
+	if IsBusDriver("SOLACE") {
+		_, err := Exec("kubectl", "-n", Namespace, "delete", "-f", "../../examples/eventbus/solace-broker.yaml", "--ignore-not-found=true")
+		s.CheckError(err)
+		_, err = Exec("kubectl", "-n", Namespace, "delete", "-f", "../../examples/rbac/eventsource-lease-rbac.yaml", "--ignore-not-found=true")
+		s.CheckError(err)
+	}
 }
 
 func (s *E2ESuite) BeforeTest(string, string) {
@@ -171,6 +203,8 @@ func (s *E2ESuite) Given() *Given {
 func GetBusDriverSpec() string {
 	x := strings.ToUpper(os.Getenv("EventBusDriver"))
 	switch x {
+	case "SOLACE":
+		return E2EEventBusSolace
 	case "JETSTREAM":
 		return E2EEventBusJetstream
 	case "KAFKA":
@@ -178,4 +212,8 @@ func GetBusDriverSpec() string {
 	default:
 		return E2EEventBusSTAN
 	}
+}
+
+func IsBusDriver(driver string) bool {
+	return strings.EqualFold(os.Getenv("EventBusDriver"), driver)
 }
